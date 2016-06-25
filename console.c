@@ -107,7 +107,7 @@ panic(char *s)
 {
   int i;
   uint pcs[10];
-  
+
   cli();
   cons.locking = 0;
   cprintf("cpu%d: panic: ", cpu->id);
@@ -126,11 +126,68 @@ panic(char *s)
 #define CRTPORT 0x3d4
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
+// Coordinates start from the left top as (0, 0)
+// put char c directly to the (x, y) pixcel
+// Note:
+// - When finished, the cursor would be set to the line after the bottom-most-in-history line.
+// - When cursor moves, it clears its moving path.
+// Bug:
+// - With no care about the current screen and cursor, would cause something remaining or covering on the console.
+void
+write_at(int x, int y, char c)
+{
+  static int bottom = 0;
+  int pos;
+
+  if (x < 0 || x > 80 || y < 0 || y > 80)
+    panic("out of canvas range");
+  pos = x + 80 * y;
+  if (y > bottom) {
+    memset(crt + (bottom + 1) * 80, 0, sizeof(crt[0]) * 80 * (y - bottom));
+    bottom = y;
+  }
+
+  if(c == '\n')
+    pos += 80 - pos%80;
+  else if(c == BACKSPACE){
+    if(pos > 0) --pos;
+  } else
+    crt[pos++] = (c&0xff) | 0x0700;  // black on white
+
+  if(pos < 0 || pos > 25*80)
+    panic("pos under/overflow");
+
+  if((pos/80) >= 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+    pos -= 80;
+    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+  }
+  pos = (bottom + 1) * 80;
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos>>8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos);
+  crt[pos] = ' ' | 0x0700;
+}
+
+// Clear all and set the cursor to (0, 0)
+// which is the left top of the console.
+void clear_screen(void) {
+  int pos = 0;
+  memset(crt, 0, sizeof(crt[0])*(24*80));
+
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos>>8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos);
+  crt[pos] = ' ' | 0x0700;
+}
+
 static void
 cgaputc(int c)
 {
   int pos;
-  
+
   // Cursor position: col + 80*row.
   outb(CRTPORT, 14);
   pos = inb(CRTPORT+1) << 8;
@@ -146,13 +203,13 @@ cgaputc(int c)
 
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
-  
+
   if((pos/80) >= 24){  // Scroll up.
     memmove(crt, crt+80, sizeof(crt[0])*23*80);
     pos -= 80;
     memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
   }
-  
+
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
@@ -294,4 +351,3 @@ consoleinit(void)
   picenable(IRQ_KBD);
   ioapicenable(IRQ_KBD, 0);
 }
-

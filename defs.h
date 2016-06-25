@@ -20,6 +20,8 @@ void            consoleinit(void);
 void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
+void            write_at(int x, int y, char c);
+void            clear_screen(void);
 
 // exec.c
 int             exec(char*, char**);

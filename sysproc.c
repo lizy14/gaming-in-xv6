@@ -61,7 +61,7 @@ sys_sleep(void)
 {
   int n;
   uint ticks0;
-  
+
   if(argint(0, &n) < 0)
     return -1;
   acquire(&tickslock);
@@ -83,9 +83,30 @@ int
 sys_uptime(void)
 {
   uint xticks;
-  
+
   acquire(&tickslock);
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int
+sys_write_at(void)
+{
+  int x, y;
+  int c;
+
+  if (argint(0, &x) < 0 || argint(1, &y) < 0 || argint(2, &c) < 0) {
+    return -1;
+  }
+
+  write_at(x, y, (char)c);
+  return 0;
+}
+
+int
+sys_clear_screen(void)
+{
+  clear_screen();
+  return 0;
 }
