@@ -25,7 +25,7 @@ int sleep(int);
 int uptime(void);
 void write_at(int, int, char);
 void clear_screen(void);
-
+void set_console_parameters(int);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

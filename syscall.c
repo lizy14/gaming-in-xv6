@@ -100,6 +100,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_write_at(void);
 extern int sys_clear_screen(void);
+extern int sys_set_console_parameters(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -125,6 +126,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_write_at]  sys_write_at,
 [SYS_clear_screen]  sys_clear_screen,
+[SYS_set_console_parameters] sys_set_console_parameters
 };
 
 void

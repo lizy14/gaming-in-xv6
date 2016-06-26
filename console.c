@@ -23,6 +23,12 @@ static struct {
   int locking;
 } cons;
 
+static int input_buffer_parameters = 0;
+
+void set_console_parameters(int p){
+  input_buffer_parameters = p;
+}
+
 static void
 printint(int xx, int base, int sign)
 {
@@ -271,8 +277,9 @@ consoleintr(int (*getc)(void))
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         input.buf[input.e++ % INPUT_BUF] = c;
-        consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+        if(!input_buffer_parameters)
+					consputc(c);
+        if(input_buffer_parameters || c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
           input.w = input.e;
           wakeup(&input.r);
         }

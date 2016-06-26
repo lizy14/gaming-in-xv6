@@ -22,7 +22,7 @@ void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
 void            write_at(int x, int y, char c);
 void            clear_screen(void);
-
+void						set_console_parameters(int);
 // exec.c
 int             exec(char*, char**);
 

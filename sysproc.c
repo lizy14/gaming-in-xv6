@@ -110,3 +110,10 @@ sys_clear_screen(void)
   clear_screen();
   return 0;
 }
+
+int sys_set_console_parameters(void){
+	int p;
+	argint(0,&p);
+	set_console_parameters(p);
+	return 0;
+}
