@@ -75,7 +75,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 #CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -fvar-tracking -fvar-tracking-assignments -O0 -g -Wall -MD -gdwarf-2 -m32 -Werror -fno-omit-frame-pointer
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -fvar-tracking -fvar-tracking-assignments -O0 -g -Wall -MD -gdwarf-2 -m32 -Werror -fno-omit-frame-pointer -std=c99
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
@@ -173,8 +173,9 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_wyhtest\
-  _foobar
-
+	_foobar\
+	_snake\
+	_clear
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -235,6 +236,12 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
 
+qemu-xbox: fs.img xv6.img
+	sudo ~/xboxdrv/xboxdrv --detach-kernel-driver > /tmp/xbox_log &
+	sleep 1s
+	python gamepad.py 1>/dev/null &
+	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+
 # CUT HERE
 # prepare dist for students
 # after running make dist, probably want to
@@ -242,11 +249,13 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 # check in that version.
 
 EXTRA=\
-	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c wyhtest.c foobar.c\
+	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c wyhtest.c foobar.c clear.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
+	snake.c\
+
 
 dist:
 	rm -rf dist
