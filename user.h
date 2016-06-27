@@ -39,3 +39,8 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+void mysrand(unsigned int);
+void myrand();
+int random(int, int);
+
+

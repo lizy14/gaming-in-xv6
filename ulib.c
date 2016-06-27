@@ -3,6 +3,8 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
+#include "random.h"
+static unsigned int rand_seed;
 
 char*
 strcpy(char *s, char *t)
@@ -103,3 +105,29 @@ memmove(void *vdst, void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
+
+
+int random(int min, int max)
+{
+	static int flag=0;
+	if(flag==0){
+		mysrand(uptime());
+		myrand();
+		flag=1;
+	}else{
+		myrand();
+	}
+	int rand = min+rand_seed%(max-min+1);
+	return rand;
+}
+
+void mysrand(unsigned int seed)
+{
+	rand_seed = seed;
+}
+
+void myrand()
+{
+	rand_seed = (rand_seed * 16807L) % ((1<<31) - 1);
+}
+
