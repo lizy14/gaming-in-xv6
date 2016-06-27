@@ -173,7 +173,8 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_wyhtest\
-  _foobar
+	_foobar\
+	_snake\
 
 
 fs.img: mkfs README $(UPROGS)
@@ -247,6 +248,8 @@ EXTRA=\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
+	snake.c\
+
 
 dist:
 	rm -rf dist
