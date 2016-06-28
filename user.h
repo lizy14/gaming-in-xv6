@@ -2,8 +2,8 @@
 #define CONS_CRED       0xc0
 #define CONS_CBLUE      0x90
 #define CONS_CDEFAULT   0x70
-#define CONS_NO_BUFFER  0x1 | CONS_CDEFAULT
-#define CONS_BUFFER    	0x0 | CONS_CDEFAULT
+#define CONS_NO_BUFFER  0x1
+#define CONS_BUFFER    	0x0
 
 struct stat;
 struct rtcdate;
