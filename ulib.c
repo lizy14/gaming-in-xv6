@@ -116,7 +116,7 @@ int random(int min, int max)
 	}else{
 		myrand();
 	}
-	int rand = min+rand_seed%(max-min+1);
+	int rand = min+rand_seed%(max-min);
 	return rand;
 }
 

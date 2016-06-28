@@ -40,13 +40,17 @@ void init();
 int game();
 void gameRestart();
 void gameOver();
-void gameVictory();
+void gameVictory();	
 
 // move the snake and eat the food.
 void logic();
 
 // draw the snake and food
 void draw();
+void draw_food();
+void draw_snake_head();
+void draw_length();
+void draw_black_on_tail();
 
 // Change a char to lowercase if c is uppercase
 // Nothing will be done if c is lowercase or not a English letter.
@@ -55,7 +59,8 @@ char charLower(const char c);
 int main()
 {
 	main_thread();
-	set_console_parameters(0);
+	clear_screen();
+	set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
 	exit();
 	return 0;
 }
@@ -63,40 +68,33 @@ int main()
 void main_thread()
 {
 	init();
-	// set_timer(game, 1000);
-	set_console_parameters(1);
+	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
 	while(gameStatus != EXIT)
 	{
-		if(gameStatus == OVER)
-			gameOver();
-		else if(gameStatus == VICTORY)
-			gameVictory();
-		else
+		char c = ' ';
+		read(0, &c, 1);
+		c = charLower(c);
+		switch(c)
 		{
-			char c = ' ';
-			read(0, &c, 1);
-			c = charLower(c);
-			switch(c)
-			{
-				case 'w':
-					snake.dir = UP;
-					break;
-				case 'a':
-					snake.dir = LEFT;
-					break;
-				case 'd':
-					snake.dir = RIGHT;
-					break;
-				case 's':
-					snake.dir = DOWN;
-					break;
-				case 'e':
-					gameStatus = EXIT;
-				default:
-					continue;
-			}
-			game();
+			case 'w':
+				snake.dir = UP;
+				break;
+			case 'a':
+				snake.dir = LEFT;
+				break;
+			case 'd':
+				snake.dir = RIGHT;
+				break;
+			case 's':
+				snake.dir = DOWN;
+				break;
+			case 'e':
+				gameStatus = EXIT;
+				break;
+			default:
+				continue;
 		}
+		game();
 	}
 }
 
@@ -115,19 +113,6 @@ Pos getFoodPos()
 		pos = getRandomPos();
 	}
 	return pos;
-	// Pos p;
-	// int x, y;
-	// for(x = 10; x < MAX_X; x ++)
-	// 	for(y = 10; y < MAX_Y; y ++)
-	// 	{
-	// 		p.x = x;
-	// 		p.y = y;
-	// 		if(! inSnake(p))
-	// 			return p;
-	// 	}
-	// p.x = -1;
-	// p.y = -1;
-	// return p;
 }
 
 bool isPosEqual(const Pos p1, const Pos p2)
@@ -160,19 +145,28 @@ void init()
 	food = getFoodPos();
 	gameStatus = RUNNING;
 	
-	int x = snake.pos[snake.head].x;
-	int y = snake.pos[snake.head].y;
-	write_at(2 * food.x, food.y, chrFood);
-	write_at(2 * food.x + 1, food.y, chrFood);
-	write_at(2 * x, y, chrSnake);	
-	write_at(2 * x + 1, y, chrSnake);
-	
+	draw_food();
+	draw_snake_head();
+	draw_length();
 }
 
 int game()
 {
-	logic();
-	draw();	
+	if(gameStatus == OVER)
+		gameOver();
+	else if(gameStatus == VICTORY)
+		gameVictory();
+	else if(gameStatus == RUNNING)
+	{
+		logic();
+		draw();		
+	}
+	else
+	{
+		clear_screen();
+		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
+		exit();
+	}
 	
 	return 0;
 }
@@ -258,21 +252,50 @@ void draw()
 {
 	if(gameStatus != RUNNING)
 		return;
-	int head = snake.head;
-	write_at(2 * snake.pos[head].x, snake.pos[head].y, chrSnake);
-	write_at(2 * snake.pos[head].x + 1, snake.pos[head].y, chrSnake);
+	draw_snake_head();
 	if(eaten == 0){
-		int cur = (head + MaxSize - snake.length) % MaxSize;
-		int x = snake.pos[cur].x;
-		int y = snake.pos[cur].y;
-		write_at(2 * x, y, ' ');
-		write_at(2 * x + 1, y, ' ');
+		draw_black_on_tail();
 	}
 	else
 	{
-		write_at(2 * food.x, food.y, chrFood);
-		write_at(2 * food.x + 1, food.y, chrFood);
+		draw_food();
+		draw_length();
 	}
+}
+
+void draw_food()
+{
+	set_console_parameters(CONS_NO_BUFFER | CONS_CGREEN);
+	write_at(2 * food.x, food.y, chrFood);
+	write_at(2 * food.x + 1, food.y, chrFood);	
+	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
+}
+
+void draw_snake_head()
+{
+	set_console_parameters(CONS_NO_BUFFER | CONS_CBLUE);
+	int x = snake.pos[snake.head].x;
+	int y = snake.pos[snake.head].y;
+	write_at(2 * x, y, chrSnake);	
+	write_at(2 * x + 1, y, chrSnake);
+	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
+}
+
+void draw_length()
+{
+	set_console_parameters(CONS_NO_BUFFER | CONS_CRED);
+	set_cursor(10, MAX_Y);
+	printf(1, "Snake length: %d", snake.length);
+	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
+}
+
+void draw_black_on_tail()
+{
+	int cur = (snake.head + MaxSize - snake.length) % MaxSize;
+	int x = snake.pos[cur].x;
+	int y = snake.pos[cur].y;
+	write_at(2 * x, y, ' ');
+	write_at(2 * x + 1, y, ' ');
 }
 
 char charLower(char c)

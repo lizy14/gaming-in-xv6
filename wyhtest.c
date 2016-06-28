@@ -5,7 +5,7 @@
 int
 main(int argc, char *argv[])
 {
-  set_console_parameters(CONS_RED | CONS_NO_BUFFER);
+  // set_console_parameters(CONS_RED | CONS_NO_BUFFER);
   //if (atoi(argv[4]) == 1)
     clear_screen();
   //write_at(atoi(argv[1]), atoi(argv[2]), *argv[3]);
