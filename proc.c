@@ -545,8 +545,8 @@ int join(void **stack)
 			if(p->state == ZOMBIE){
 				// found one
 				pid = p->pid;
-				kfree(p->stack);
-				p->stack = 0;
+				kfree(p->kstack);
+				p->kstack = 0;
 				p->state = UNUSED;
 				p->pid = 0;
 				p->parent = 0;
