@@ -145,7 +145,7 @@ write_at(int x, int y, char c)
   static int bottom = 0;
   int pos;
 
-  if (x < 0 || x > 80 || y < 0 || y > 80)
+  if (x < 0 || x > 79 || y < 0 || y > 23)
     panic("out of canvas range");
   pos = x + 80 * y;
   if (y > bottom) {
@@ -160,14 +160,15 @@ write_at(int x, int y, char c)
   } else
     crt[pos++] = (c&0xff) | 0x0700;  // black on white
 
-  if(pos < 0 || pos > 25*80)
+  if(pos < 0 || pos > 24*80)
     panic("pos under/overflow");
 
-  if((pos/80) >= 24){  // Scroll up.
-    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+  if((pos/80) > 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*24*80);
     pos -= 80;
-    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+    memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
   }
+
   pos = (bottom + 1) * 80;
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
@@ -180,7 +181,7 @@ write_at(int x, int y, char c)
 // which is the left top of the console.
 void clear_screen(void) {
   int pos = 0;
-  memset(crt, 0, sizeof(crt[0])*(24*80));
+  memset(crt, 0, sizeof(crt[0])*(25*80));
 
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
@@ -210,10 +211,10 @@ cgaputc(int c)
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
 
-  if((pos/80) >= 24){  // Scroll up.
-    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+  if((pos/80) > 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*24*80);
     pos -= 80;
-    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+    memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
   }
 
   outb(CRTPORT, 14);
