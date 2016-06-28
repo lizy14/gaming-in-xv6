@@ -23,4 +23,6 @@
 #define SYS_write_at  22
 #define SYS_clear_screen  23
 #define SYS_set_console_parameters 24
-#define SYS_set_cursor  25
+#define SYS_clone 25
+#define SYS_join 26
+#define SYS_set_cursor  27

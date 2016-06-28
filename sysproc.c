@@ -120,6 +120,28 @@ sys_set_console_parameters(void)
 	return 0;
 }
 
+int 
+sys_clone(void)
+{
+  int function, arg, stack;
+  if(argint(0, &function) < 0)
+    return -1;
+  if(argint(1, &arg) < 0)
+    return -1;
+  if(argint(2, &stack) < 0)
+    return -1;
+  return clone((void*)function, (void*)arg, (void*)stack);
+}
+
+int
+sys_join(void)
+{
+  int stack;
+  if(argint(0,&stack)<0)
+    return -1;
+  return join((void**)stack);
+}
+
 int
 sys_set_cursor(void)
 {
