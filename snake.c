@@ -81,22 +81,26 @@ void main_thread()
 		switch(c)
 		{
 			case 'w':
-				snake.dir = UP;
+				if(snake.dir != DOWN || snake.length == 1)
+					snake.dir = UP;
 				if(gameStatus == BEGINNING)
 					gameStatus = RUNNING;
 				break;
 			case 'a':
-				snake.dir = LEFT;
+				if(snake.dir != RIGHT || snake.length == 1)				
+					snake.dir = LEFT;
 				if(gameStatus == BEGINNING)
 					gameStatus = RUNNING;
 				break;
 			case 'd':
-				snake.dir = RIGHT;
+				if(snake.dir != LEFT || snake.length == 1)				
+					snake.dir = RIGHT;
 				if(gameStatus == BEGINNING)
 					gameStatus = RUNNING;
 				break;
 			case 's':
-				snake.dir = DOWN;
+				if(snake.dir != UP || snake.length == 1)				
+					snake.dir = DOWN;
 				if(gameStatus == BEGINNING)
 					gameStatus = RUNNING;
 				break;
@@ -211,7 +215,7 @@ void gameRestart()
 void gameOver()
 {
 	clear_screen();
-	printf(1, "Game over!\npress %c to restart\npress %c to exit\n", chrRestart, chrExit);
+	printf(1, "Game over!\nSnake length: %d\npress %c to restart\npress %c to exit\n",snake.length, chrRestart, chrExit);
 	gameRestart();
 }
 
@@ -304,7 +308,7 @@ void draw_snake_head()
 void draw_length()
 {
 	set_console_parameters(CONS_NO_BUFFER | CONS_CRED);
-	set_cursor(10, MAX_Y);
+	set_cursor(35, MAX_Y);
 	printf(1, "Snake length: %d", snake.length);
 	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
 }
