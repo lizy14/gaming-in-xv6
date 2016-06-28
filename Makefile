@@ -236,11 +236,15 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
 
-qemu-xbox: fs.img xv6.img
+xbox-dbg:
+	lsusb
+	ps -aux | grep gamepad.py
+	ps -aux | grep xboxdrv
+
+xbox-daemon: 
 	sudo ~/xboxdrv/xboxdrv --detach-kernel-driver > /tmp/xbox_log &
 	sleep 1s
 	python gamepad.py 1>/dev/null &
-	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 # CUT HERE
 # prepare dist for students
