@@ -1,6 +1,18 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+#include "fs.h"
+#include "fcntl.h"
+
+#define NUM_THREADS 2
+#define TARGET_COUNT_PER_THREAD 50000
+#define SEMAPHORE_NUM 0
+
+uint g_counter;
+
+
+//game logic
+
 #define MAX_X 40
 #define MAX_Y 24
 #define MaxSize (1000 + 10)
@@ -40,7 +52,7 @@ void init();
 int game();
 void gameRestart();
 void gameOver();
-void gameVictory();	
+void gameVictory();
 
 // move the snake and eat the food.
 void logic();
@@ -56,14 +68,6 @@ void draw_black_on_tail();
 // Nothing will be done if c is lowercase or not a English letter.
 char charLower(const char c);
 
-int main()
-{
-	main_thread();
-	clear_screen();
-	set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
-	exit();
-	return 0;
-}
 
 void main_thread()
 {
@@ -144,7 +148,7 @@ void init()
 	snake.pos[0].y = MAX_Y / 2;
 	food = getFoodPos();
 	gameStatus = RUNNING;
-	
+
 	draw_food();
 	draw_snake_head();
 	draw_length();
@@ -159,7 +163,7 @@ int game()
 	else if(gameStatus == RUNNING)
 	{
 		logic();
-		draw();		
+		draw();
 	}
 	else
 	{
@@ -167,7 +171,7 @@ int game()
 		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
 		exit();
 	}
-	
+
 	return 0;
 }
 
@@ -189,7 +193,7 @@ void gameRestart()
 void gameOver()
 {
 	clear_screen();
-	printf(1, "%s\n", 
+	printf(1, "%s\n",
 		"Game over!\npress r to restart\npress e to exit\n");
 	gameRestart();
 }
@@ -267,7 +271,7 @@ void draw_food()
 {
 	set_console_parameters(CONS_NO_BUFFER | CONS_CGREEN);
 	write_at(2 * food.x, food.y, chrFood);
-	write_at(2 * food.x + 1, food.y, chrFood);	
+	write_at(2 * food.x + 1, food.y, chrFood);
 	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
 }
 
@@ -276,7 +280,7 @@ void draw_snake_head()
 	set_console_parameters(CONS_NO_BUFFER | CONS_CBLUE);
 	int x = snake.pos[snake.head].x;
 	int y = snake.pos[snake.head].y;
-	write_at(2 * x, y, chrSnake);	
+	write_at(2 * x, y, chrSnake);
 	write_at(2 * x + 1, y, chrSnake);
 	set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
 }
@@ -303,4 +307,105 @@ char charLower(char c)
 	if(c >= 'A' && c <= 'Z')
 		return(c - 'A' + 'a');
 	return c;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//multi-thread
+
+
+void *thread(void *arg)
+{
+	sleep(10);
+	int id = *(int*)arg;
+	printf(1, "thread %d: started...\n", id);
+
+	if(id==0)
+		while(sleep(10),gameStatus!=EXIT)
+			game();
+	else{
+		clear_screen();
+		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
+		main_thread();
+	}
+	exit();
+}
+
+int main(int argc, char **argv)
+{
+	int i, j;
+
+	int final_counter;
+	int final_target = NUM_THREADS*TARGET_COUNT_PER_THREAD;
+
+
+	// Initialize counter
+	g_counter = 0;
+
+	// Set up thread stuff
+
+	// Stacks
+	void *stacks[NUM_THREADS];
+	// Args
+	int *args[NUM_THREADS];
+
+	// Allocate stacks and args and make sure we have them all
+	// Bail if something fails
+	for (i=0; i<NUM_THREADS; i++) {
+		stacks[i] = (void*) malloc(4096);
+		if (!stacks[i]) {
+			printf(1, "main: could not get stack for thread %d, exiting...\n");
+			exit();
+		}
+
+		args[i] = (int*) malloc(4);
+		if (!args[i]) {
+			printf(1, "main: could not get memory (for arg) for thread %d, exiting...\n");
+			exit();
+		}
+
+		*args[i] = i;
+	}
+
+	printf(1, "main: running with %d threads...\n", NUM_THREADS);
+
+	// Start all children
+	for (i=0; i<NUM_THREADS; i++) {
+		int pid = clone(thread, args[i], stacks[i]);
+		printf(1, "main: created thread with pid %d\n", pid);
+	}
+
+	// Wait for all children
+	for (i=0; i<NUM_THREADS; i++) {
+		void *joinstack;
+		join(&joinstack);
+		for (j=0; j<NUM_THREADS; j++) {
+			if (joinstack == stacks[i]) {
+				printf(1, "main: thread %d joined...\n", i);
+				break;
+			}
+		}
+
+	}
+
+	// Check the result
+	final_counter = g_counter;
+	printf(1, "Final counter is %d, target is %d\n", final_counter, final_target);
+	if (final_counter == final_target)
+		printf(1, "TEST PASSED!\n");
+	else
+		printf(1, "TEST FAILED!\n");
+
+
+	// Exit
+	exit();
 }
