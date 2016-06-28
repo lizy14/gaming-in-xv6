@@ -10,9 +10,6 @@
 
 uint g_counter;
 
-
-//game logic
-
 #define MAX_X 40
 #define MAX_Y 24
 #define MaxSize (1000 + 10)
@@ -20,6 +17,8 @@ uint g_counter;
 #define false 0
 #define chrSnake ((char)(219))
 #define chrFood ((char)(176))
+#define chrExit ('x')
+#define chrRestart ('y')
 typedef enum{DOWN, UP, LEFT, RIGHT} Dir;
 typedef enum{RUNNING, OVER, VICTORY, EXIT} GameStatus;
 typedef int bool;
@@ -78,6 +77,12 @@ void main_thread()
 		char c = ' ';
 		read(0, &c, 1);
 		c = charLower(c);
+
+		set_console_parameters(CONS_NO_BUFFER | CONS_CRED);
+		set_cursor(0, MAX_Y);
+		printf(1, "%c", c);
+		set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
+
 		switch(c)
 		{
 			case 'w':
@@ -92,13 +97,12 @@ void main_thread()
 			case 's':
 				snake.dir = DOWN;
 				break;
-			case 'e':
+			case chrExit:
 				gameStatus = EXIT;
 				break;
 			default:
 				continue;
 		}
-		game();
 	}
 }
 
@@ -180,9 +184,9 @@ void gameRestart()
 	char c = ' ';
 	c = charLower(c);
 
-	while(c != 'r' && c != 'e')
+	while(c != chrRestart && c != chrExit)
 		read(0, &c, 1);
-	if(c == 'r')
+	if(c == chrRestart)
 	{
 		init();
 	}
@@ -193,16 +197,14 @@ void gameRestart()
 void gameOver()
 {
 	clear_screen();
-	printf(1, "%s\n",
-		"Game over!\npress r to restart\npress e to exit\n");
+	printf(1, "Game over!\npress %c to restart\npress %c to exit\n", chrRestart, chrExit);
 	gameRestart();
 }
 
 void gameVictory()
 {
 	clear_screen();
-	printf(1, "%s\n",
-		"Vicotry!\npress r to restart\npress e to exit\n");
+	printf(1, "Vicotry!\npress %c to restart\npress %c to exit\n", chrRestart, chrExit);
 	gameRestart();
 }
 
