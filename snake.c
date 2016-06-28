@@ -115,8 +115,9 @@ Pos getFoodPos()
 	// 	pos = getRandomPos();
 	// }
 	Pos p;
-	for(int x = 10; x < MAX_X; x ++)
-		for(int y = 10; y < MAX_Y; y ++)
+	int x, y;
+	for(x = 10; x < MAX_X; x ++)
+		for(y = 10; y < MAX_Y; y ++)
 		{
 			p.x = x;
 			p.y = y;
@@ -137,7 +138,8 @@ bool isPosEqual(const Pos p1, const Pos p2)
 
 bool inSnake(const Pos pos)
 {
-	for(int i = 0; i < snake.length; i ++)
+	int i;
+	for(i = 0; i < snake.length; i ++)
 	{
 		int cur = (snake.head + MaxSize - i) % MaxSize;
 		if(isPosEqual(snake.pos[cur], pos))
