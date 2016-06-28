@@ -14,7 +14,7 @@
 #define chrExit ('x')
 #define chrRestart ('y')
 typedef enum{DOWN, UP, LEFT, RIGHT} Dir;
-typedef enum{BEGINNING, RUNNING, OVER, VICTORY, EXIT} GameStatus;
+typedef enum{BEGINNING, RUNNING, OVER, VICTORY, WAITING, EXIT} GameStatus;
 typedef int bool;
 typedef struct
 {
@@ -43,7 +43,6 @@ bool isPosEqual(const Pos p1, const Pos p2);
 bool inSnake(const Pos pos);
 void init();
 int game();
-void gameRestart();
 void gameOver();
 void gameVictory();
 
@@ -71,38 +70,59 @@ void main_thread()
 		char c = ' ';
 		read(0, &c, 1);
 		c = charLower(c);
-
-		switch(c)
+		if(gameStatus == WAITING)
 		{
-			case 'w':
-				if(snake.dir != DOWN || snake.length == 1)
-					snake.dir = UP;
-				if(gameStatus == BEGINNING)
-					gameStatus = RUNNING;
-				break;
-			case 'a':
-				if(snake.dir != RIGHT || snake.length == 1)				
-					snake.dir = LEFT;
-				if(gameStatus == BEGINNING)
-					gameStatus = RUNNING;
-				break;
-			case 'd':
-				if(snake.dir != LEFT || snake.length == 1)				
-					snake.dir = RIGHT;
-				if(gameStatus == BEGINNING)
-					gameStatus = RUNNING;
-				break;
-			case 's':
-				if(snake.dir != UP || snake.length == 1)				
-					snake.dir = DOWN;
-				if(gameStatus == BEGINNING)
-					gameStatus = RUNNING;
-				break;
-			case chrExit:
+			while(c != chrRestart && c != chrExit)
+			{
+				read(0, &c, 1);
+				c = charLower(c);
+			}
+			if(c == chrRestart)
+			{
+				init();
+				continue;
+			}
+			else
+			{
 				gameStatus = EXIT;
 				break;
-			default:
-				continue;
+			}
+			
+		}
+		else if(gameStatus == RUNNING || gameStatus == BEGINNING)
+		{
+			switch(c)
+			{
+				case 'w':
+					if(snake.dir != DOWN || snake.length == 1)
+						snake.dir = UP;
+					if(gameStatus == BEGINNING)
+						gameStatus = RUNNING;
+					break;
+				case 'a':
+					if(snake.dir != RIGHT || snake.length == 1)				
+						snake.dir = LEFT;
+					if(gameStatus == BEGINNING)
+						gameStatus = RUNNING;
+					break;
+				case 'd':
+					if(snake.dir != LEFT || snake.length == 1)				
+						snake.dir = RIGHT;
+					if(gameStatus == BEGINNING)
+						gameStatus = RUNNING;
+					break;
+				case 's':
+					if(snake.dir != UP || snake.length == 1)				
+						snake.dir = DOWN;
+					if(gameStatus == BEGINNING)
+						gameStatus = RUNNING;
+					break;
+				case chrExit:
+					gameStatus = EXIT;
+					break;
+				default:
+					continue;
+			}
 		}
 	}
 }
@@ -187,37 +207,26 @@ int game()
 		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
 		exit();
 	}
+	else if(gameStatus == WAITING)
+	{
+		// do nothing.
+	}
 
 	return 0;
-}
-
-void gameRestart()
-{
-	char c = ' ';
-	c = charLower(c);
-
-	while(c != chrRestart && c != chrExit)
-		read(0, &c, 1);
-	if(c == chrRestart)
-	{
-		init();
-	}
-	else
-		gameStatus = EXIT;
 }
 
 void gameOver()
 {
 	clear_screen();
 	printf(1, "Game over!\nSnake length: %d\npress %c to restart\npress %c to exit\n",snake.length, chrRestart, chrExit);
-	gameRestart();
+	gameStatus = WAITING;
 }
 
 void gameVictory()
 {
 	clear_screen();
 	printf(1, "Vicotry!\npress %c to restart\npress %c to exit\n", chrRestart, chrExit);
-	gameRestart();
+	gameStatus = WAITING;
 }
 
 void logic()
@@ -238,7 +247,7 @@ void logic()
 			newHeadPos.x --;
 			break;
 		default:
-			printf(1, "error");
+			break;
 	}
 
 	// Game over?
@@ -334,8 +343,10 @@ void *thread(void *arg)
 	printf(1, "thread %d: started...\n", id);
 
 	if(id==0)
+	{
 		while(sleep(10),gameStatus!=EXIT)
 			game();
+	}
 	else{
 		main_thread();
 		clear_screen();

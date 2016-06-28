@@ -23,9 +23,13 @@ additional dependencies
 
 then
 
-	make xbox-daemon
+	sudo make xbox-daemon
 	make qemu
 	$ snake
+
+if does not work, try
+	sudo killall python
+	sudo killall xboxdrv
 
 Tested only with Microsoft X-Box 360 pad (USB 045e:028e).
 
