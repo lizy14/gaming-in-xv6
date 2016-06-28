@@ -177,6 +177,16 @@ write_at(int x, int y, char c)
   crt[pos] = ' ' | 0x0700;
 }
 
+void set_cursor(int x, int y) {
+  if (x < 0 || x > 80 || y < 0 || y > 24)
+    panic("In console.c:182, x or y under/overflow");
+  int pos = x + y * 80;
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos>>8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos);
+}
+
 // Clear all and set the cursor to (0, 0)
 // which is the left top of the console.
 void clear_screen(void) {

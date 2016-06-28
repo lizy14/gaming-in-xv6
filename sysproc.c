@@ -111,9 +111,21 @@ sys_clear_screen(void)
   return 0;
 }
 
-int sys_set_console_parameters(void){
+int
+sys_set_console_parameters(void)
+{
 	int p;
 	argint(0,&p);
 	set_console_parameters(p);
 	return 0;
+}
+
+int
+sys_set_cursor(void)
+{
+  int x, y;
+  if (argint(0, &x) < 0 || argint(1, &y) < 0)
+    return -1;
+  set_cursor(x, y);
+  return 0;
 }

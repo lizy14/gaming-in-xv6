@@ -26,6 +26,7 @@ int uptime(void);
 void write_at(int, int, char);
 void clear_screen(void);
 void set_console_parameters(int);
+void set_cursor(int, int);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);
@@ -42,5 +43,3 @@ int atoi(const char*);
 void mysrand(unsigned int);
 void myrand();
 int random(int, int);
-
-
