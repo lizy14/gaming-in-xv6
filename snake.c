@@ -20,7 +20,7 @@ uint g_counter;
 #define chrExit ('x')
 #define chrRestart ('y')
 typedef enum{DOWN, UP, LEFT, RIGHT} Dir;
-typedef enum{RUNNING, OVER, VICTORY, EXIT} GameStatus;
+typedef enum{BEGINNING, RUNNING, OVER, VICTORY, EXIT} GameStatus;
 typedef int bool;
 typedef struct
 {
@@ -78,24 +78,27 @@ void main_thread()
 		read(0, &c, 1);
 		c = charLower(c);
 
-		set_console_parameters(CONS_NO_BUFFER | CONS_CRED);
-		set_cursor(0, MAX_Y);
-		printf(1, "%c", c);
-		set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
-
 		switch(c)
 		{
 			case 'w':
 				snake.dir = UP;
+				if(gameStatus == BEGINNING)
+					gameStatus = RUNNING;
 				break;
 			case 'a':
 				snake.dir = LEFT;
+				if(gameStatus == BEGINNING)
+					gameStatus = RUNNING;
 				break;
 			case 'd':
 				snake.dir = RIGHT;
+				if(gameStatus == BEGINNING)
+					gameStatus = RUNNING;
 				break;
 			case 's':
 				snake.dir = DOWN;
+				if(gameStatus == BEGINNING)
+					gameStatus = RUNNING;
 				break;
 			case chrExit:
 				gameStatus = EXIT;
@@ -120,6 +123,17 @@ Pos getFoodPos()
 	while(inSnake(pos)){
 		pos = getRandomPos();
 	}
+	// if the pos is not in the center religion
+	// then we get the pos again.
+	if(pos.x < MAX_X / 4 || pos.x > MAX_X * 3 / 4
+		|| pos.y < MAX_Y / 4 || pos.y > MAX_Y * 3 / 4)
+	{
+		Pos pos = getRandomPos();
+		while(inSnake(pos)){
+			pos = getRandomPos();
+		}	
+	}
+
 	return pos;
 }
 
@@ -151,7 +165,7 @@ void init()
 	snake.pos[0].x = MAX_X / 2;
 	snake.pos[0].y = MAX_Y / 2;
 	food = getFoodPos();
-	gameStatus = RUNNING;
+	gameStatus = BEGINNING;
 
 	draw_food();
 	draw_snake_head();
@@ -169,7 +183,7 @@ int game()
 		logic();
 		draw();
 	}
-	else
+	else if(gameStatus == EXIT)
 	{
 		clear_screen();
 		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
