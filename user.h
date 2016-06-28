@@ -1,5 +1,5 @@
 #define CONS_NO_BUFFER  0x1
-#define CONS_CBUFFER    0x0
+#define CONS_BUFFER    0x0
 #define CONS_CGREEN     0xa0
 #define CONS_CRED       0xc0
 #define CONS_CBLUE      0x90
