@@ -4,12 +4,6 @@
 #include "fs.h"
 #include "fcntl.h"
 
-#define NUM_THREADS 2
-#define TARGET_COUNT_PER_THREAD 50000
-#define SEMAPHORE_NUM 0
-
-uint g_counter;
-
 #define MAX_X 40
 #define MAX_Y 24
 #define MaxSize (1000 + 10)
@@ -330,16 +324,6 @@ char charLower(char c)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 //multi-thread
 
 
@@ -353,10 +337,11 @@ void *thread(void *arg)
 		while(sleep(10),gameStatus!=EXIT)
 			game();
 	else{
+		main_thread();
 		clear_screen();
 		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
-		main_thread();
 	}
+
 	exit();
 }
 
@@ -364,68 +349,24 @@ int main(int argc, char **argv)
 {
 	int i, j;
 
-	int final_counter;
-	int final_target = NUM_THREADS*TARGET_COUNT_PER_THREAD;
+	void *stacks[2];
+	int *args[2];
 
-
-	// Initialize counter
-	g_counter = 0;
-
-	// Set up thread stuff
-
-	// Stacks
-	void *stacks[NUM_THREADS];
-	// Args
-	int *args[NUM_THREADS];
-
-	// Allocate stacks and args and make sure we have them all
-	// Bail if something fails
-	for (i=0; i<NUM_THREADS; i++) {
+	for (i=0; i<2; i++) {
 		stacks[i] = (void*) malloc(4096);
-		if (!stacks[i]) {
-			printf(1, "main: could not get stack for thread %d, exiting...\n");
-			exit();
-		}
-
 		args[i] = (int*) malloc(4);
-		if (!args[i]) {
-			printf(1, "main: could not get memory (for arg) for thread %d, exiting...\n");
-			exit();
-		}
-
 		*args[i] = i;
 	}
 
-	printf(1, "main: running with %d threads...\n", NUM_THREADS);
 
-	// Start all children
-	for (i=0; i<NUM_THREADS; i++) {
-		int pid = clone(thread, args[i], stacks[i]);
-		printf(1, "main: created thread with pid %d\n", pid);
+	for (i=0; i<2; i++) {
+		clone(thread, args[i], stacks[i]);
 	}
 
-	// Wait for all children
-	for (i=0; i<NUM_THREADS; i++) {
-		void *joinstack;
-		join(&joinstack);
-		for (j=0; j<NUM_THREADS; j++) {
-			if (joinstack == stacks[i]) {
-				printf(1, "main: thread %d joined...\n", i);
-				break;
-			}
-		}
-
+	for (i=0; i<2; i++) {
+		void *_;
+		join(&_);
 	}
 
-	// Check the result
-	final_counter = g_counter;
-	printf(1, "Final counter is %d, target is %d\n", final_counter, final_target);
-	if (final_counter == final_target)
-		printf(1, "TEST PASSED!\n");
-	else
-		printf(1, "TEST FAILED!\n");
-
-
-	// Exit
 	exit();
 }

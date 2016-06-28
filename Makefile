@@ -236,11 +236,6 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
 
-xbox-prep:
-	sudo add-apt-repository ppa:grumbel/ppa
-	sudo apt-get update
-	sudo apt-get install xboxdrv
-
 xbox-dbg:
 	lsusb
 	ps -aux | grep gamepad.py
