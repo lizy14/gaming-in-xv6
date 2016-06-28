@@ -3,7 +3,7 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
-#include "random.h"
+
 static unsigned int rand_seed;
 
 char*

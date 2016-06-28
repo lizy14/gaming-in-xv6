@@ -42,5 +42,7 @@ int atoi(const char*);
 void mysrand(unsigned int);
 void myrand();
 int random(int, int);
+int clone(void*, void*, void*);
+int join(void**);
 
 
