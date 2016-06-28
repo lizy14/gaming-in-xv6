@@ -1,3 +1,10 @@
+#define CONS_CGREEN     0xa0
+#define CONS_CRED       0xc0
+#define CONS_CBLUE      0x90
+#define CONS_CDEFAULT   0x70
+#define CONS_NO_BUFFER  0x1
+#define CONS_BUFFER    	0x0
+
 struct stat;
 struct rtcdate;
 
@@ -26,6 +33,7 @@ int uptime(void);
 void write_at(int, int, char);
 void clear_screen(void);
 void set_console_parameters(int);
+void set_cursor(int, int);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);
@@ -44,5 +52,4 @@ void myrand();
 int random(int, int);
 int clone(void*, void*, void*);
 int join(void**);
-
 

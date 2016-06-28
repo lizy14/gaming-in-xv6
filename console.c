@@ -23,10 +23,12 @@ static struct {
   int locking;
 } cons;
 
-static int input_buffer_parameters = 0;
+// console_flags: 0x 0000 00ab
+// a: color; b: input_buffer_mask
+static int console_flags = 0x0070;
 
 void set_console_parameters(int p){
-  input_buffer_parameters = p;
+  console_flags = p;
 }
 
 static void
@@ -145,8 +147,8 @@ write_at(int x, int y, char c)
   static int bottom = 0;
   int pos;
 
-  if (x < 0 || x > 80 || y < 0 || y > 80)
-    panic("out of canvas range");
+  if (x < 0 || x > 79 || y < 0 || y > 23)
+    panic("In console.c:151(write_at), x or y out of canvas range");
   pos = x + 80 * y;
   if (y > bottom) {
     memset(crt + (bottom + 1) * 80, 0, sizeof(crt[0]) * 80 * (y - bottom));
@@ -158,35 +160,45 @@ write_at(int x, int y, char c)
   else if(c == BACKSPACE){
     if(pos > 0) --pos;
   } else
-    crt[pos++] = (c&0xff) | 0x0700;  // black on white
+    crt[pos++] = (c&0xff) | ((console_flags & 0x00f0) << 4);  // black on white
 
-  if(pos < 0 || pos > 25*80)
+  if(pos < 0 || pos > 24*80)
     panic("pos under/overflow");
 
-  if((pos/80) >= 24){  // Scroll up.
-    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+  if((pos/80) > 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*24*80);
     pos -= 80;
-    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+    memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
   }
+
   pos = (bottom + 1) * 80;
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+}
+
+void set_cursor(int x, int y) {
+  if (x < 0 || x > 80 || y < 0 || y > 24)
+    panic("In console.c:182(set_cursor), x or y under/overflow");
+  int pos = x + y * 80;
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos>>8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos);
 }
 
 // Clear all and set the cursor to (0, 0)
 // which is the left top of the console.
 void clear_screen(void) {
   int pos = 0;
-  memset(crt, 0, sizeof(crt[0])*(24*80));
+  memset(crt, 0, sizeof(crt[0])*(25*80));
 
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+  crt[pos] = ' ' | ((console_flags & 0x00f0) << 4);
 }
 
 static void
@@ -205,22 +217,22 @@ cgaputc(int c)
   else if(c == BACKSPACE){
     if(pos > 0) --pos;
   } else
-    crt[pos++] = (c&0xff) | 0x0700;  // black on white
+    crt[pos++] = (c&0xff) | ((console_flags & 0x00f0) << 4);  // black on white
 
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
 
-  if((pos/80) >= 24){  // Scroll up.
-    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+  if((pos/80) > 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*24*80);
     pos -= 80;
-    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+    memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
   }
 
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+  crt[pos] = ' ' | ((console_flags & 0x00f0) << 4);
 }
 
 void
@@ -277,9 +289,9 @@ consoleintr(int (*getc)(void))
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         input.buf[input.e++ % INPUT_BUF] = c;
-        if(!input_buffer_parameters)
+        if(!(console_flags & 0x1))
 					consputc(c);
-        if(input_buffer_parameters || c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+        if(console_flags & 0x1 || c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
           input.w = input.e;
           wakeup(&input.r);
         }

@@ -25,4 +25,4 @@
 #define SYS_set_console_parameters 24
 #define SYS_clone 25
 #define SYS_join 26
-
+#define SYS_set_cursor  27
