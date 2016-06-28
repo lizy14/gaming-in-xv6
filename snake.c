@@ -6,8 +6,8 @@
 #define MaxSize (1000 + 10)
 #define true 1
 #define false 0
-#define chrSnake 's'
-#define chrFood 'f'
+#define chrSnake ((char)(219))
+#define chrFood ((char)(176))
 typedef enum{DOWN, UP, LEFT, RIGHT} Dir;
 typedef enum{RUNNING, OVER, VICTORY, EXIT} GameStatus;
 typedef int bool;
@@ -32,7 +32,7 @@ bool eaten = 0;
 GameStatus gameStatus;
 
 void main_thread();
-// Pos getRandomPos();
+Pos getRandomPos();
 Pos getFoodPos();
 bool isPosEqual(const Pos p1, const Pos p2);
 bool inSnake(const Pos pos);
@@ -100,32 +100,34 @@ void main_thread()
 	}
 }
 
-// Pos getRandomPos()
-// {
-// 	Pos pos;
-// 	pos.x = rand(0, MAX_X);
-// 	pos.y = rand(0, MAX_Y);
-// 	return pos;
-// }
+Pos getRandomPos()
+{
+	Pos pos;
+	pos.x = random(0, MAX_X);
+	pos.y = random(0, MAX_Y);
+	return pos;
+}
 
 Pos getFoodPos()
 {
-	// Pos pos = getRandomPos();
-	// while(inSnake(pos)){
-	// 	pos = getRandomPos();
-	// }
-	Pos p;
-	for(int x = 10; x < MAX_X; x ++)
-		for(int y = 10; y < MAX_Y; y ++)
-		{
-			p.x = x;
-			p.y = y;
-			if(! inSnake(p))
-				return p;
-		}
-	p.x = -1;
-	p.y = -1;
-	return p;
+	Pos pos = getRandomPos();
+	while(inSnake(pos)){
+		pos = getRandomPos();
+	}
+	return pos;
+	// Pos p;
+	// int x, y;
+	// for(x = 10; x < MAX_X; x ++)
+	// 	for(y = 10; y < MAX_Y; y ++)
+	// 	{
+	// 		p.x = x;
+	// 		p.y = y;
+	// 		if(! inSnake(p))
+	// 			return p;
+	// 	}
+	// p.x = -1;
+	// p.y = -1;
+	// return p;
 }
 
 bool isPosEqual(const Pos p1, const Pos p2)
@@ -137,7 +139,8 @@ bool isPosEqual(const Pos p1, const Pos p2)
 
 bool inSnake(const Pos pos)
 {
-	for(int i = 0; i < snake.length; i ++)
+	int i;
+	for(i = 0; i < snake.length; i ++)
 	{
 		int cur = (snake.head + MaxSize - i) % MaxSize;
 		if(isPosEqual(snake.pos[cur], pos))
