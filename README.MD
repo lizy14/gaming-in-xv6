@@ -16,14 +16,14 @@ There is a user-mode game "snake" as demonstration, accepting both keyboard and 
 ### gamepad control
 additional dependencies
 
-	sudo add-apt-repository -q ppa:grumbel/ppa
+	sudo add-apt-repository ppa:grumbel/ppa
 	sudo apt-get -q update
 	sudo apt-get -q install xboxdrv
 	sudo apt-get -q install python-virtkey
 
 then
 
-	make xbox-daemon
+	sudo make xbox-daemon
 	make qemu
 	$ snake
 
