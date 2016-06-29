@@ -26,6 +26,7 @@ typedef struct
 {
 	Pos pos[MaxSize];
 	Dir dir;
+	Dir nextDir;
 	int length;
 	int head;
 } Snake;
@@ -95,25 +96,25 @@ void main_thread()
 			{
 				case 'w':
 					if(snake.dir != DOWN || snake.length == 1)
-						snake.dir = UP;
+						snake.nextDir = UP;
 					if(gameStatus == BEGINNING)
 						gameStatus = RUNNING;
 					break;
 				case 'a':
 					if(snake.dir != RIGHT || snake.length == 1)				
-						snake.dir = LEFT;
+						snake.nextDir = LEFT;
 					if(gameStatus == BEGINNING)
 						gameStatus = RUNNING;
 					break;
 				case 'd':
 					if(snake.dir != LEFT || snake.length == 1)				
-						snake.dir = RIGHT;
+						snake.nextDir = RIGHT;
 					if(gameStatus == BEGINNING)
 						gameStatus = RUNNING;
 					break;
 				case 's':
 					if(snake.dir != UP || snake.length == 1)				
-						snake.dir = DOWN;
+						snake.nextDir = DOWN;
 					if(gameStatus == BEGINNING)
 						gameStatus = RUNNING;
 					break;
@@ -165,7 +166,7 @@ bool isPosEqual(const Pos p1, const Pos p2)
 bool inSnake(const Pos pos)
 {
 	int i;
-	for(i = 0; i < snake.length; i ++)
+	for(i = 0; i < snake.length - 1; i ++)
 	{
 		int cur = (snake.head + MaxSize - i) % MaxSize;
 		if(isPosEqual(snake.pos[cur], pos))
@@ -178,6 +179,7 @@ void init()
 {
 	clear_screen();
 	snake.dir = UP;
+	snake.nextDir = UP;
 	snake.length = 1;
 	snake.head = 0;
 	snake.pos[0].x = MAX_X / 2;
@@ -232,6 +234,7 @@ void gameVictory()
 void logic()
 {
 	Pos newHeadPos = snake.pos[snake.head];
+	snake.dir = snake.nextDir;
 	switch(snake.dir)
 	{
 		case DOWN:
