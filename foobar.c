@@ -29,7 +29,7 @@ main(int argc, char *argv[])
 		draw_method_flag = atoi(argv[1]);
 	if(draw_method_flag){
 		clear_screen();
-		set_console_parameters(1);
+		set_console_parameters(CONS_NO_BUFFER | CONS_CDEFAULT);
 	}
 	printf(1,"%s\n","welcome to foobar! \npress w/a/s/d to move, e to quit.");
 	while(1){
@@ -62,7 +62,7 @@ main(int argc, char *argv[])
 	}
 	go_out:
 	if(draw_method_flag){
-		set_console_parameters(0);
+		set_console_parameters(CONS_BUFFER | CONS_CDEFAULT);
 		clear_screen();
 	}
 	printf(1,"bye!\n");
